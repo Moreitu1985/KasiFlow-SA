@@ -1,0 +1,24 @@
+{
+  "name": "KasiFlow SA",
+  "short_name": "KasiFlow",
+  "description": "Bookings, walk-ins, barber pay and the numbers for kasi barbershops, with an app for every person on the team.",
+  "id": "/",
+  "start_url": "/start",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8f4ec",
+  "theme_color": "#18181b",
+  "lang": "en-ZA",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Walk-in queue", "short_name": "Queue", "url": "/queue", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Find a barber", "short_name": "Barbers", "url": "/c/shops", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
