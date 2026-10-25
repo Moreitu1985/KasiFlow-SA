@@ -1,0 +1,33 @@
+# Render Blueprint for the KasiFlow SA API (https://render.com/docs/blueprint-spec).
+# In Render: New → Blueprint → pick this repository. Render asks for every value marked `sync: false`;
+# type them into Render's dashboard — never commit them here.
+services:
+  - type: web
+    name: kasiflow-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health/ready
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: App__TrustForwardedHeadersFromAnyProxy
+        value: "true"
+      - key: Automation__EnableWorker
+        value: "true"
+      # Supabase → Connect → Session pooler (port 5432) connection string, in Npgsql form:
+      # Host=...;Port=5432;Database=postgres;Username=postgres.<ref>;Password=...;SSL Mode=Require
+      - key: Database__ConnectionString
+        sync: false
+      - key: Auth__SupabaseUrl          # https://<project-ref>.supabase.co
+        sync: false
+      - key: Cors__AllowedOrigins__0    # your exact Vercel URL, e.g. https://kasiflow-sa.vercel.app
+        sync: false
+      - key: App__PublicWebBaseUrl      # the same Vercel URL
+        sync: false
+      - key: Integrations__SandboxSigningKey
+        generateValue: true
+      - key: Security__FingerprintKey
+        generateValue: true

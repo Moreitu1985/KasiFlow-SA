@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f8f4ec" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="KasiFlow" />
+    <meta name="description" content="KasiFlow SA: bookings, walk-ins, barber pay and the numbers for kasi barbershops, with an app for every person on the team." />
+    <title>KasiFlow SA</title>
+    <script>
+      // Night shift: set the theme before the first paint so there is never a white flash. Mirrors src/lib/theme.ts.
+      ;(function () {
+        var pref = 'system'
+        try {
+          pref = localStorage.getItem('kf-theme') || 'system'
+        } catch (e) {}
+        var dark = pref === 'dark'
+        if (pref !== 'light' && pref !== 'dark') {
+          try {
+            dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          } catch (e) {}
+        }
+        var t = dark ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', t)
+        document.documentElement.style.colorScheme = t
+        var m = document.querySelector('meta[name="theme-color"]')
+        if (m) m.setAttribute('content', dark ? '#0e0e11' : '#f8f4ec')
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

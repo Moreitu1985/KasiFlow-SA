@@ -1,0 +1,38 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+appsettings.*.local.json
+appsettings.Production.json
+
+# Node / Vite
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
+# Secrets & local config — never commit
+.env
+.env.*
+!.env.example
+*.local
+secrets.json
+*.pem
+*.key
+
+# Editors / OS
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local sync scratch
+.sync/
+
+# local sync bundles
+_sync/
+
+# demo logins written by `dotnet run -- demo-users`
+demo-logins.local
