@@ -39,7 +39,13 @@ It creates, in your Supabase project, an owner, a business manager, a receptioni
 also saved to the git-ignored `demo-logins.local`. Re-running resets the passwords **and rebuilds the demo shop**
 so today's bookings, walk-in queue, house call, barber statuses, 90 days of visits, pay terms and the cash forecast are
 current — run it on the morning of a demo. Only the shop flagged `is_demo` and owned by the demo owner login is ever
-removed; your own business is never touched. Add `--keep` to leave the existing demo shop as it is. Demo customers sign in with a password
+removed; your own business is never touched. Add `--keep` to leave the existing demo shop as it is.
+
+The rebuild also loads the **extra demo data** (`database/seed/demo_more.sql`): the regular customers on the customer
+list, about a year of appointment-book visits (house calls included), walk-in queue history, and confirmed bookings for
+the rest of today and the next 7 days plus three requests waiting for an answer. It never adds money transactions, so
+today's cash balance and the cash-shortage forecast stay as designed. Add `--basic` to skip it, or run
+`dotnet run -- demo-more` to add it to an existing demo shop without changing anyone's password (it runs once per shop). Demo customers sign in with a password
 only when `VITE_DEMO_PASSWORD_SIGNIN=true` is set in the web app; real customers always use one-time codes.
 
 ## Booking rules

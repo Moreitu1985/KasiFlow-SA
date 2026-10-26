@@ -10,7 +10,7 @@ namespace KasiFlow.Api.Data;
 /// </summary>
 public static class DatabaseCommands
 {
-    public static bool IsCommand(string[] args) => args.Length > 0 && args[0] is "migrate" or "seed-demo" or "demo-users";
+    public static bool IsCommand(string[] args) => args.Length > 0 && args[0] is "migrate" or "seed-demo" or "demo-users" or "demo-more";
 
     public static async Task<int> RunAsync(string[] args, IServiceProvider services, IHostEnvironment env, ILogger logger)
     {
@@ -27,6 +27,24 @@ public static class DatabaseCommands
 
         if (args[0] == "demo-users")
             return await DemoUsersCommand.RunAsync(args, services, services.GetRequiredService<IConfiguration>(), env, logger, root);
+
+        if (args[0] == "demo-more")
+        {
+            if (env.IsProduction() && !args.Contains("--allow-production"))
+            {
+                logger.LogError("Refusing to add demo data in Production without --allow-production.");
+                return 3;
+            }
+            var demo = await FindDemoBusinessAsync(db);
+            if (demo is null)
+            {
+                logger.LogError("No demo shop found. Run `dotnet run -- demo-users` first.");
+                return 2;
+            }
+            var added = await AddMoreDemoDataAsync(db, root, demo.Value);
+            logger.LogInformation(added ? "Extra demo data added to {Name}." : "{Name} already has the extra demo data (rebuild with demo-users to start over).", DemoBusinessName);
+            return 0;
+        }
 
         var idx = Array.IndexOf(args, "--user-id");
         if (idx < 0 || idx + 1 >= args.Length || !Guid.TryParse(args[idx + 1], out var userId))
@@ -96,6 +114,33 @@ public static class DatabaseCommands
         foreach (var sql in steps) await conn.ExecuteAsync(sql, new { Ids = ids }, tx, commandTimeout: 120);
         await tx.CommitAsync();
         return ids.Length;
+    }
+
+    /// <summary>The fictional demo shop to top up: the one with the most linked people (the demo-users shop), newest first.</summary>
+    public static async Task<Guid?> FindDemoBusinessAsync(IDbConnectionFactory db)
+    {
+        await using var conn = await db.OpenAsync();
+        return await conn.QueryFirstOrDefaultAsync<Guid?>(
+            """
+            SELECT b.id FROM businesses b
+            WHERE b.is_demo = TRUE AND b.name = @Name
+            ORDER BY (SELECT COUNT(*) FROM business_members m WHERE m.business_id = b.id AND m.is_active) DESC, b.created_at DESC
+            LIMIT 1
+            """, new { Name = DemoBusinessName });
+    }
+
+    /// <summary>Runs database/seed/demo_more.sql for one demo shop. Returns false when it was already loaded.</summary>
+    public static async Task<bool> AddMoreDemoDataAsync(IDbConnectionFactory db, string databaseFolder, Guid businessId)
+    {
+        var sql = await File.ReadAllTextAsync(Path.Combine(databaseFolder, "seed", "demo_more.sql"));
+        // The script uses the psql variable :'business_id'. The value is a Guid, so substitution is safe.
+        sql = sql.Replace(":'business_id'", $"'{businessId:D}'");
+        await using var conn = await db.OpenAsync();
+        var before = await conn.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM bookings WHERE business_id = @B AND internal_note = 'Extra demo data'", new { B = businessId });
+        if (before > 0) return false;
+        await conn.ExecuteAsync(sql, commandTimeout: 300);
+        await Repositories.JobQueue.EnqueueGrowthRefreshAsync(conn, null, businessId);
+        return true;
     }
 
     public static async Task<int> MigrateAsync(IDbConnectionFactory db, string folder, ILogger logger)
