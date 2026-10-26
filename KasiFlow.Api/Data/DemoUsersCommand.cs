@@ -123,11 +123,15 @@ public static class DemoUsersCommand
                 ON CONFLICT (user_id) DO UPDATE SET verified_email = EXCLUDED.verified_email
                 """, new { U = kagiso.Id, Name = kagiso.User.Name, E = kagiso.User.Email });
             await conn.ExecuteAsync(
-                "UPDATE bookings SET customer_user_id = @U, verified_contact = @E, customer_email = @E WHERE business_id = @B AND customer_name LIKE 'Kagiso%'",
+                "UPDATE bookings SET customer_user_id = @U, verified_contact = @E, customer_email = @E WHERE business_id = @B AND customer_name LIKE 'Kagiso%' AND source NOT IN ('history','walkin')",
                 new { U = kagiso.Id, E = kagiso.User.Email, B = businessId });
 
             await conn.ExecuteAsync("UPDATE public_profiles SET is_published = TRUE WHERE business_id = @B", new { B = businessId });
         }
+
+        // A fuller shop: regular customers, a year of visits, walk-in history and the coming week's bookings (--basic skips it).
+        // Runs after the logins are linked so the demo customers' accounts are not tied to the extra fictional visits.
+        if (!args.Contains("--basic")) await DatabaseCommands.AddMoreDemoDataAsync(db, databaseFolder, businessId);
 
         string slug;
         await using (var conn = await db.OpenAsync())
